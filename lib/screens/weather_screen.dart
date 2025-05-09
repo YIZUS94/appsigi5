@@ -24,10 +24,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   Future<void> _fetchWeather() async {
     try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = '';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _errorMessage = '';
+        });
+      }
 
       // Verificación de servicios de ubicación
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -59,15 +61,19 @@ class _WeatherScreenState extends State<WeatherScreen> {
         _currentPosition!.longitude,
       );
 
-      setState(() {
-        _weatherData = weatherData;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _weatherData = weatherData;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = _parseErrorMessage(e);
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = _parseErrorMessage(e);
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -240,6 +246,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Aquí puedes cancelar cualquier suscripción o animación que estés usando
+    super.dispose();
   }
 }
 

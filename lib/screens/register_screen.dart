@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:appsigi5/services/auth_service.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart'; // Importa el paquete de iconos
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -27,16 +28,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     final success = await AuthService.register(
-      email: _emailController.text,
-      password: _passwordController.text,
-      name: _nameController.text,
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+      name: _nameController.text.trim(),
     );
 
     if (mounted) {
       setState(() => _isLoading = false);
-      
+
       if (success) {
-        Navigator.pushReplacementNamed(context, '/home');
+        // Modificación aquí: en lugar de navegar a '/home', regresamos a la pantalla anterior (inicio de sesión)
+        Navigator.pop(context); // Esto regresará a la pantalla que llamó al registro
       } else {
         setState(() => _errorMessage = 'El email ya está registrado');
       }
@@ -46,35 +48,84 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Registro')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nombre completo'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Contraseña (mínimo 6 caracteres)'),
-              obscureText: true,
-            ),
-            if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _register,
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Registrarse'),
-            ),
-          ],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const Text(
+                'Crea tu cuenta',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontFamily: 'Pacifico', fontSize: 28.0, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+              ),
+              const SizedBox(height: 30),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  hintText: 'Nombre completo',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  hintText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  hintText: 'Contraseña (mínimo 6 caracteres)',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 25),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _register,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Registrarse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 10),
+                          const Icon(MaterialCommunityIcons.pig, size: 24),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 15),
+              if (_errorMessage != null)
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red, fontFamily: 'Montserrat'),
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(context), // Para volver a la pantalla de inicio de sesión
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                ),
+                child: const Text(
+                  '¿Ya tienes una cuenta? Inicia sesión',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontFamily: 'Montserrat', color: Colors.deepPurple),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

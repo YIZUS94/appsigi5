@@ -9,6 +9,7 @@ import 'weather_screen.dart';
 import 'package:appsigi5/services/auth_service.dart';
 import 'package:appsigi5/widgets/menu_card.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart'; // Importa el paquete de iconos
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -26,7 +27,19 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Granja Porcina'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('PorciTech', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8.0),
+            const Icon(
+              MaterialCommunityIcons.pig, // Usa el mismo icono de cerdo
+              size: 24.0,
+              color: Color.fromARGB(255, 255, 0, 187), // Ajusta el color si es necesario
+            ),
+          ],
+        ),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
