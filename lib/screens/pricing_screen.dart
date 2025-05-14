@@ -3,7 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 
 class PricingScreen extends StatefulWidget {
-  const PricingScreen({super.key});
+  final Function(ThemeMode) onThemeChanged;
+
+  const PricingScreen({super.key, required this.onThemeChanged});
 
   @override
   State<PricingScreen> createState() => _PricingScreenState();
@@ -68,19 +70,19 @@ class _PricingScreenState extends State<PricingScreen> {
     _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       // Comentamos el cambio automático para usar los botones manuales
       // if (_factorTexts.isNotEmpty) {
-      //   print("PageController.page: ${_pageController.page}");
-      //   int nextPage = (_pageController.page?.round() ?? 0) + 1;
-      //   if (nextPage >= _factorTexts.length) {
-      //     nextPage = 0;
-      //   }
-      //   _pageController.animateToPage(
-      //     nextPage,
-      //     duration: const Duration(milliseconds: 500),
-      //     curve: Curves.easeInOut,
-      //   );
-      //   if (mounted) {
-      //     setState(() {});
-      //   }
+      //   print("PageController.page: ${_pageController.page}");
+      //   int nextPage = (_pageController.page?.round() ?? 0) + 1;
+      //   if (nextPage >= _factorTexts.length) {
+      //     nextPage = 0;
+      //   }
+      //   _pageController.animateToPage(
+      //     nextPage,
+      //     duration: const Duration(milliseconds: 500),
+      //     curve: Curves.easeInOut,
+      //   );
+      //   if (mounted) {
+      //     setState(() {});
+      //   }
       // }
     });
   }
@@ -116,10 +118,17 @@ class _PricingScreenState extends State<PricingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Precios y Costos'),
         actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: DropdownButton<String>(

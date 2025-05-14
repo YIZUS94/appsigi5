@@ -1,59 +1,12 @@
+import 'package:appsigi5/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:appsigi5/services/auth_service.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart'; // Importa el paquete
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mi Awesome App', // Nombre de tu aplicación
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple, // Color primario de la aplicación
-        scaffoldBackgroundColor: Colors.deepPurple.shade50, // Color de fondo suave
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurpleAccent, // Color del botón resaltado
-            foregroundColor: Colors.white, // Color del texto del botón
-            padding: const EdgeInsets.symmetric(vertical: 15.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            textStyle: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.bold, fontSize: 16), // Estilo del texto del botón
-          ),
-        ),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-            borderSide: BorderSide(color: Colors.deepPurple),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-            borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0),
-          ),
-          hintStyle: TextStyle(color: Colors.grey, fontFamily: 'Montserrat'),
-          labelStyle: TextStyle(color: Colors.deepPurple, fontFamily: 'Montserrat', fontWeight: FontWeight.w500),
-        ),
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(fontFamily: 'Montserrat'),
-          bodySmall: TextStyle(fontFamily: 'Montserrat'),
-          titleLarge: TextStyle(fontFamily: 'Pacifico', fontSize: 32.0, fontWeight: FontWeight.bold, color: Colors.deepPurple), // Estilo del título principal
-          headlineSmall: TextStyle(fontFamily: 'Montserrat', fontSize: 18.0, color: Colors.deepPurpleAccent), // Estilo del subtítulo
-        ),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple).copyWith(secondary: Colors.pinkAccent), // Un color secundario para acentos
-      ),
-      home: const AuthScreen(),
-    );
-  }
-}
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  final Function(ThemeMode) onThemeChanged;
+
+  const AuthScreen({super.key, required this.onThemeChanged});
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -80,7 +33,10 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen(onThemeChanged: widget.onThemeChanged)),
+        );
       } else {
         setState(() => _errorMessage = 'Credenciales incorrectas');
       }
@@ -89,7 +45,19 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('PorciTech'),
+        actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -103,18 +71,17 @@ class _AuthScreenState extends State<AuthScreen> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Text(
-                'PorciTech', // Nombre de tu aplicación
+                'PorciTech',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 20),
-              // Aquí agregamos el icono de cerdo (asumiendo que existe en MaterialCommunityIcons)
               const Icon(
-                MaterialCommunityIcons.pig, // ¡Verifica el nombre exacto en la documentación!
+                MaterialCommunityIcons.pig,
                 size: 80.0,
                 color: Color.fromARGB(255, 255, 0, 225),
               ),
-              const SizedBox(height: 20), // Espacio entre el icono y los campos
+              const SizedBox(height: 20),
               TextField(
                 controller: _emailController,
                 decoration: const InputDecoration(

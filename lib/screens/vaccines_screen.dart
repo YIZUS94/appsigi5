@@ -7,7 +7,9 @@ import 'dart:convert';
 import '../widgets/vaccine_card.dart';
 
 class VaccinesScreen extends StatefulWidget {
-  const VaccinesScreen({super.key});
+  final Function(ThemeMode) onThemeChanged;
+
+  const VaccinesScreen({super.key, required this.onThemeChanged});
 
   @override
   State<VaccinesScreen> createState() => _VaccinesScreenState();
@@ -38,8 +40,6 @@ class _VaccinesScreenState extends State<VaccinesScreen> {
 
   List<VaccineApplication> _getApplicationsForDay(DateTime day) {
     final formattedDay = DateTime(day.year, day.month, day.day);
-    print('_getApplicationsForDay para el día formateado: $formattedDay');
-    print('_vaccineApplications[formattedDay]: ${_vaccineApplications[formattedDay]}');
     return _vaccineApplications[formattedDay] ?? [];
   }
 
@@ -55,11 +55,8 @@ class _VaccinesScreenState extends State<VaccinesScreen> {
 
       setState(() {
         final formattedDay = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
-        if (_vaccineApplications[formattedDay] != null) {
-          _vaccineApplications[formattedDay]!.add(newApplication);
-        } else {
-          _vaccineApplications[formattedDay] = [newApplication];
-        }
+        _vaccineApplications.putIfAbsent(formattedDay, () => []);
+        _vaccineApplications[formattedDay]!.add(newApplication);
         _vaccineNameController.clear();
         _appliedByController.clear();
         _pigIdentifierController.clear();
@@ -73,20 +70,17 @@ class _VaccinesScreenState extends State<VaccinesScreen> {
     final prefs = await SharedPreferences.getInstance();
     final encodedEvents = json.encode(_vaccineApplications.map((key, value) =>
         MapEntry(DateTime(key.year, key.month, key.day).toIso8601String(), value.map((app) => app.toJson()).toList())));
-    print('Guardando aplicaciones: $encodedEvents');
     await prefs.setString('vaccineApplications', encodedEvents);
   }
 
   Future<void> _loadVaccineApplications() async {
     final prefs = await SharedPreferences.getInstance();
     final storedEvents = prefs.getString('vaccineApplications');
-    print('Aplicaciones cargadas: $storedEvents');
     if (storedEvents != null) {
       final Map<String, dynamic> decodedEvents = json.decode(storedEvents);
       setState(() {
         _vaccineApplications = decodedEvents.map((key, value) => MapEntry(
             DateTime.parse(key), (value as List).map((item) => VaccineApplication.fromJson(item)).toList()));
-        print('Estado de _vaccineApplications después de cargar: $_vaccineApplications');
       });
     }
   }
@@ -268,10 +262,18 @@ class _VaccinesScreenState extends State<VaccinesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('_selectedDay en build: $_selectedDay');
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vacunas'),
+        actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

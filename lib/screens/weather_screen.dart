@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../services/weather_service.dart';
 
 class WeatherScreen extends StatefulWidget {
-  const WeatherScreen({Key? key}) : super(key: key);
+  final Function(ThemeMode) onThemeChanged;
+
+  const WeatherScreen({Key? key, required this.onThemeChanged}) : super(key: key);
 
   @override
   State<WeatherScreen> createState() => _WeatherScreenState();
@@ -102,6 +104,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clima Actual'),
@@ -111,6 +114,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: _fetchWeather,
             tooltip: 'Actualizar',
+          ),
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
           ),
         ],
       ),

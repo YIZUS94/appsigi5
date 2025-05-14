@@ -6,7 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class FoodConfigScreen extends StatefulWidget {
-  const FoodConfigScreen({super.key});
+  final Function(ThemeMode) onThemeChanged;
+
+  const FoodConfigScreen({super.key, required this.onThemeChanged});
 
   @override
   State<FoodConfigScreen> createState() => _FoodConfigScreenState();
@@ -39,6 +41,7 @@ class _FoodConfigScreenState extends State<FoodConfigScreen> {
     Icons.icecream,
     Icons.dinner_dining,
   ];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -49,31 +52,30 @@ class _FoodConfigScreenState extends State<FoodConfigScreen> {
   Color _getRandomColor() => _availableColors[_random.nextInt(_availableColors.length)];
   IconData _getRandomIcon() => _availableIcons[_random.nextInt(_availableIcons.length)];
 
-  void _addNewFood(Map<String, String> newFood) {
+  Future<void> _addNewFood(Map<String, String> newFood) async {
     setState(() {
       _customFoods.add({...newFood, 'id': DateTime.now().toString(), 'color': _getRandomColor(), 'icon': _getRandomIcon()});
-      _saveFoods();
     });
+    await _saveFoods();
   }
 
-  void _updateFood(String id, Map<String, String> updatedFood) {
+  Future<void> _updateFood(String id, Map<String, String> updatedFood) async {
     setState(() {
       final index = _customFoods.indexWhere((food) => food['id'] == id);
       if (index != -1) {
         _customFoods[index] = {..._customFoods[index], ...updatedFood};
-        _saveFoods();
       }
     });
+    await _saveFoods();
   }
 
-  void _removeCustomFood(String id) {
+  Future<void> _removeCustomFood(String id) async {
     setState(() {
       _customFoods.removeWhere((food) => food['id'] == id);
-      _saveFoods();
     });
+    await _saveFoods();
   }
 
-  // Métodos para guardar y cargar los alimentos usando SharedPreferences
   Future<void> _saveFoods() async {
     final prefs = await SharedPreferences.getInstance();
     final encodedFoods = json.encode(_customFoods.map((food) => {
@@ -93,28 +95,44 @@ class _FoodConfigScreenState extends State<FoodConfigScreen> {
         _customFoods = decodedFoods.map<Map<String, dynamic>>((food) => {
           ...food as Map<String, dynamic>,
           'color': food.containsKey('color')
-              ? Color(int.parse((food['color'] as String).substring(0, 8), radix: 16)) // Corrección aquí
+              ? Color(int.parse((food['color'] as String).substring(0, 8), radix: 16))
               : _getRandomColor(),
           'icon': food.containsKey('icon')
               ? IconData(int.parse(food['icon'].toString()), fontFamily: 'MaterialIcons')
               : _getRandomIcon(),
         }).toList();
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Configuración de Alimentos'),
+        actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
+        ],
       ),
-      body: FoodTab( // Mostramos directamente el FoodTab
-        customFoods: _customFoods,
-        onFoodAdded: _addNewFood,
-        onFoodUpdated: _updateFood,
-        onFoodRemoved: _removeCustomFood,
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : FoodTab(
+              customFoods: _customFoods,
+              onFoodAdded: _addNewFood,
+              onFoodUpdated: _updateFood,
+              onFoodRemoved: _removeCustomFood,
+            ),
     );
   }
 }

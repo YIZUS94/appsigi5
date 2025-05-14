@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 class _AddEditFoodDialog extends StatefulWidget {
   final Map<String, dynamic>? initialFood;
   final Function(Map<String, String>) onFoodAdded;
+  final Function(String, Map<String, String>)? onFoodUpdated; // Añadido onFoodUpdated
 
-  const _AddEditFoodDialog({Key? key, this.initialFood, required this.onFoodAdded}) : super(key: key);
+  const _AddEditFoodDialog({Key? key, this.initialFood, required this.onFoodAdded, this.onFoodUpdated}) : super(key: key);
 
   @override
   State<_AddEditFoodDialog> createState() => _AddEditFoodDialogState();
@@ -114,8 +115,7 @@ class _AddEditFoodDialogState extends State<_AddEditFoodDialog> {
               if (widget.initialFood == null) {
                 widget.onFoodAdded(updatedFood);
               } else {
-                final foodTab = context.findAncestorWidgetOfExactType<FoodTab>()!; // Corrección aquí: _FoodTab -> FoodTab
-                foodTab.onFoodUpdated(widget.initialFood!['id']!, updatedFood);
+                widget.onFoodUpdated?.call(widget.initialFood!['id']!, updatedFood); // Usar el callback onFoodUpdated
               }
               Navigator.of(context).pop();
             }
@@ -205,7 +205,7 @@ class _RecommendedFoodsList extends StatelessWidget {
   }
 }
 
-class FoodTab extends StatelessWidget { // Corrección aquí: _FoodTab -> FoodTab
+class FoodTab extends StatelessWidget {
   final List<Map<String, dynamic>> customFoods;
   final Function(Map<String, String>) onFoodAdded;
   final Function(String, Map<String, String>) onFoodUpdated;
@@ -281,6 +281,7 @@ class FoodTab extends StatelessWidget { // Corrección aquí: _FoodTab -> FoodTa
                                 return _AddEditFoodDialog(
                                   initialFood: food,
                                   onFoodAdded: onFoodAdded,
+                                  onFoodUpdated: onFoodUpdated, // Pasar onFoodUpdated
                                 );
                               },
                             );

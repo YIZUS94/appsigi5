@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'supplies_screen.dart'; // Importa la pantalla de Insumos
+import 'package:appsigi5/screens/Supplies_Screen.dart';
+import 'package:flutter/material.dart';// Importa la pantalla de Insumos
 import 'vaccines_screen.dart'; // Importa la pantalla de Vacunas// Importa la pantalla de Alimentos
 import 'food_config_screen.dart';
 import 'auth_screen.dart';
@@ -11,20 +11,69 @@ import 'package:appsigi5/widgets/menu_card.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart'; // Importa el paquete de iconos
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  final Function(ThemeMode) onThemeChanged;
 
+  const HomeScreen({super.key, required this.onThemeChanged});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   Future<void> _logout(BuildContext context) async {
     await AuthService.logout();
     Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (_) => AuthScreen(onThemeChanged: widget.onThemeChanged)),
+    (route) => false,
+    );
+  }
+
+  void _navigateTo(BuildContext context, Widget screen) {
+    Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const AuthScreen()),
-      (route) => false,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => screen,
+        transitionsBuilder: (_, animation, __, child) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Módulo en desarrollo'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  static Widget _buildSliderItem(String text, Color color) {
+    return Container(
+      margin: const EdgeInsets.all(5.0),
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        color: color.withOpacity(0.8),
+      ),
+      child: Center(
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -33,14 +82,20 @@ class HomeScreen extends StatelessWidget {
             const Text('PorciTech', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(width: 8.0),
             const Icon(
-              MaterialCommunityIcons.pig, // Usa el mismo icono de cerdo
+              MaterialCommunityIcons.pig,
               size: 24.0,
-              color: Color.fromARGB(255, 255, 0, 187), // Ajusta el color si es necesario
+              color: Color.fromARGB(255, 255, 0, 187),
             ),
           ],
         ),
         automaticallyImplyLeading: false,
         actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _logout(context),
@@ -82,86 +137,43 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.food_bank,
                     title: 'Comederos',
                     color: Colors.blue[700]!,
-                    onTap: () => _navigateTo(context, const FeedersScreen()),
+                    onTap: () => _navigateTo(context, FeedersScreen(onThemeChanged: widget.onThemeChanged)),
                   ),
                   MenuCard(
                     icon: Icons.cloud,
                     title: 'Clima',
                     color: Colors.green[700]!,
-                    onTap: () => _navigateTo(context, const WeatherScreen()),
+                    onTap: () => _navigateTo(context, WeatherScreen(onThemeChanged: widget.onThemeChanged)),
                   ),
                   MenuCard(
                     icon: Icons.attach_money,
                     title: 'Crecimiento',
                     color: Colors.orange[700]!,
-                    onTap: () => _navigateTo(context, const PricingScreen()),
+                    onTap: () => _navigateTo(context, PricingScreen(onThemeChanged: widget.onThemeChanged)),
                   ),
                   MenuCard(
                     icon: Icons.cookie_outlined,
                     title: 'Alimento',
-                    color: const Color.fromARGB(255, 112, 73, 0),
-                    onTap: () => _navigateTo(context, const FoodConfigScreen()),
+                    color: const Color.fromARGB(255, 211, 137, 0),
+                    onTap: () => _navigateTo(context, FoodConfigScreen(onThemeChanged: widget.onThemeChanged)),
                   ),
-                  // Botón para Vacunas
                   MenuCard(
                     icon: Icons.vaccines,
                     title: 'Vacunas',
                     color: Colors.red[700]!,
-                    onTap: () => _navigateTo(context, const VaccinesScreen()),
+                    onTap: () => _navigateTo(context, VaccinesScreen(onThemeChanged: widget.onThemeChanged)),
                   ),
-                  // Botón para Insumos
                   MenuCard(
                     icon: Icons.shopping_cart,
                     title: 'Insumos',
                     color: Colors.purple[700]!,
-                    onTap: () => _navigateTo(context, const InsumosScreen()), // Removí 'const' aquí
+                    onTap: () => _navigateTo(context, SuppliesScreen(onThemeChanged: widget.onThemeChanged)),
                   ),
                 ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  static Widget _buildSliderItem(String text, Color color) {
-    return Container(
-      margin: const EdgeInsets.all(5.0),
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.0),
-        color: color.withOpacity(0.8),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-
-  void _navigateTo(BuildContext context, Widget screen) {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => screen,
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Módulo en desarrollo'),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }

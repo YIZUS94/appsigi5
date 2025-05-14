@@ -4,14 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-class InsumosScreen extends StatefulWidget {
-  const InsumosScreen({super.key});
+class SuppliesScreen extends StatefulWidget {
+  final Function(ThemeMode) onThemeChanged;
+
+  const SuppliesScreen({super.key, required this.onThemeChanged});
 
   @override
-  State<InsumosScreen> createState() => _InsumosScreenState();
+  State<SuppliesScreen> createState() => _InsumosScreenState();
 }
 
-class _InsumosScreenState extends State<InsumosScreen> {
+class _InsumosScreenState extends State<SuppliesScreen> {
   List<Insumo> _insumos = [];
   List<String> _etapasPuerco = ['Lechón', 'Crecimiento', 'Engorde', 'Reproducción'];
   List<String> _unidadesMedida = ['kg', 'litros', 'unidad', 'saco'];
@@ -374,9 +376,18 @@ class _InsumosScreenState extends State<InsumosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Insumos'),
+        actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

@@ -2,36 +2,43 @@ import 'package:appsigi5/screens/feeder_detail_screen.dart';
 import 'package:flutter/material.dart';
 
 class FeedersScreen extends StatefulWidget {
-  const FeedersScreen({super.key});
+  final Function(ThemeMode) onThemeChanged;
+
+  const FeedersScreen({super.key, required this.onThemeChanged});
 
   @override
   State<FeedersScreen> createState() => _FeedersScreenState();
 }
 
 class _FeedersScreenState extends State<FeedersScreen> {
-  List<String> feeders = ['Comedero 1', 'Comedero 2', 'Comedero 3'];
+  Future<List<String>> _loadFeeders() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return ['Comedero 1', 'Comedero 2', 'Comedero 3'];
+  }
 
-  void _addFeeder() {
+  Future<void> _addFeeder() async {
+    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
-      feeders.add('Comedero ${feeders.length + 1}');
+      feedersSnapshot.data!.add('Comedero ${feedersSnapshot.data!.length + 1}');
     });
   }
 
-  void _removeFeeder(int index) {
-    showDialog(
+  Future<void> _removeFeeder(int index) async {
+    return showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Eliminar comedero'),
-        content: Text('¿Estás seguro de eliminar ${feeders[index]}?'),
+        content: Text('¿Estás seguro de eliminar ${feedersSnapshot.data![index]}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
+              await Future.delayed(const Duration(milliseconds: 500));
               setState(() {
-                feeders.removeAt(index);
+                feedersSnapshot.data!.removeAt(index);
               });
               Navigator.pop(context);
             },
@@ -46,7 +53,7 @@ class _FeedersScreenState extends State<FeedersScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => FeederDetailScreen(feederName: feederName),
+        builder: (context) => FeederDetailScreen(feederName: feederName, onThemeChanged: widget.onThemeChanged),
       ),
     );
   }
@@ -54,7 +61,7 @@ class _FeedersScreenState extends State<FeedersScreen> {
   void _navigateToEsp32Config() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const Esp32ConfigScreen()),
+      MaterialPageRoute(builder: (context) => Esp32ConfigScreen(onThemeChanged: widget.onThemeChanged)),
     );
   }
 
@@ -131,35 +138,65 @@ class _FeedersScreenState extends State<FeedersScreen> {
     );
   }
 
+  late Future<List<String>> feedersFuture;
+  late AsyncSnapshot<List<String>> feedersSnapshot;
+
+  @override
+  void initState() {
+    super.initState();
+    feedersFuture = _loadFeeders();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Comederos', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color.fromARGB(0, 0, 0, 0),
         foregroundColor: Theme.of(context).primaryColor,
+        actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              widget.onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Expanded(
-              child: feeders.isEmpty
-                  ? _buildEmptyState()
-                  : GridView.builder(
+              child: FutureBuilder<List<String>>(
+                future: feedersFuture,
+                builder: (context, snapshot) {
+                  feedersSnapshot = snapshot;
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error al cargar los comederos: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return _buildEmptyState();
+                  } else {
+                    return GridView.builder(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                         childAspectRatio: 0.9,
                       ),
-                      itemCount: feeders.length,
+                      itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        return _buildFeederCard(feeders[index], index);
+                        return _buildFeederCard(snapshot.data![index], index);
                       },
-                    ),
+                    );
+                  }
+                },
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -207,10 +244,13 @@ class _FeedersScreenState extends State<FeedersScreen> {
 }
 
 class Esp32ConfigScreen extends StatelessWidget {
-  const Esp32ConfigScreen({super.key});
+  final Function(ThemeMode) onThemeChanged;
+
+  const Esp32ConfigScreen({super.key, required this.onThemeChanged});
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final TextEditingController ssidController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController ipController = TextEditingController();
@@ -219,6 +259,14 @@ class Esp32ConfigScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Configuración ESP32'),
+        actions: [
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              onThemeChanged(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -239,7 +287,7 @@ class Esp32ConfigScreen extends StatelessWidget {
             TextField(
               controller: ipController,
               decoration: const InputDecoration(labelText: 'Dirección IP'),
-              keyboardType: TextInputType.numberWithOptions(decimal: true, signed: false),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -252,7 +300,6 @@ class Esp32ConfigScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Aquí puedes agregar la lógica para guardar o usar los datos del ESP32
                   String ssid = ssidController.text;
                   String password = passwordController.text;
                   String ip = ipController.text;
@@ -261,8 +308,6 @@ class Esp32ConfigScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Datos del ESP32 guardados (simulado)')),
                   );
-                  // Puedes decidir si quieres navegar de vuelta a la pantalla anterior aquí
-                  // Navigator.pop(context);
                 },
                 child: const Text('Guardar Configuración'),
               ),
