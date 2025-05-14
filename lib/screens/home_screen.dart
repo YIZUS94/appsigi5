@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text('PorciTech', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(width: 8.0),
             const Icon(
-              MaterialCommunityIcons.pig,
+              MaterialCommunityIcons.pig_variant,
               size: 24.0,
               color: Color.fromARGB(255, 255, 0, 187),
             ),

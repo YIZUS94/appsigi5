@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:async';
 
@@ -284,8 +285,9 @@ class _PricingScreenState extends State<PricingScreen> {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            Icon(icon, size: 30, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 16),
+            const Icon(MaterialCommunityIcons.pig, size: 44, color: Color.fromARGB(255, 87, 0, 138),),
+            Padding(padding: const EdgeInsets.all(16.0),),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

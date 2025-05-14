@@ -77,9 +77,9 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 20),
               const Icon(
-                MaterialCommunityIcons.pig,
+                MaterialCommunityIcons.pig_variant,
                 size: 80.0,
-                color: Color.fromARGB(255, 255, 0, 225),
+                color: Color.fromARGB(255, 255, 102, 252),
               ),
               const SizedBox(height: 20),
               TextField(
@@ -121,7 +121,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Text(
                   '¿No tienes cuenta? Regístrate',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Montserrat', color: Theme.of(context).primaryColor),
+                  style: TextStyle(fontFamily: 'Montserrat', color: Colors.deepPurpleAccent) ,
                 ),
               ),
             ],

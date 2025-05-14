@@ -58,7 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const Text(
                 'Crea tu cuenta',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Pacifico', fontSize: 28.0, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                style: TextStyle(fontFamily: 'Pacifico', fontSize: 28.0, fontWeight: FontWeight.bold, color: Colors.deepPurpleAccent),
               ),
               const SizedBox(height: 30),
               TextField(
@@ -102,7 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         children: [
                           const Text('Registrarse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           const SizedBox(width: 10),
-                          const Icon(MaterialCommunityIcons.pig, size: 24),
+                          const Icon(MaterialCommunityIcons.pig_variant, size: 24),
                         ],
                       ),
               ),
@@ -121,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: const Text(
                   '¿Ya tienes una cuenta? Inicia sesión',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Montserrat', color: Colors.deepPurple),
+                  style: TextStyle(fontFamily: 'Montserrat', color: Colors.deepPurpleAccent),
                 ),
               ),
             ],
